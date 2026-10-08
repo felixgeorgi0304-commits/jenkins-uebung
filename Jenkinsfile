@@ -1,12 +1,18 @@
 pipeline {
     agent any
-	parameters {
-		choice choices: ['dev', 'test', 'prod'], name: 'UMGEBUNG'
-	}
+    parameters {
+        choice choices: ['dev', 'test', 'prod'], name: 'UMGEBUNG'
+    }
     stages {
         stage('Build') {
             steps {
+                echo "Umgebung: ${params.UMGEBUNG}"
                 sh 'echo "Version 1.0" > version.txt'
+            }
+        }
+        stage('Lint') {
+            steps {
+                echo 'Prüfe Codequalität...'
             }
         }
         stage('Test') {
@@ -14,29 +20,17 @@ pipeline {
                 echo 'Teste...'
             }
         }
-	stage('Lint') {
-		steps {
-			echo 'Prüfe Codequalität...'
-		}
-	}
-       stage('Deploy') {
-    when {
-        expression { params.UMGEBUNG == 'prod' }
-    }
-    steps {
-        echo 'Deploye...'
-    }
-}
+        stage('Deploy') {
+            when {
+                expression { params.UMGEBUNG == 'prod' }
+            }
+            steps {
+                echo 'Deploye...'
+            }
+        }
     }
     post {
-        sstage('Deploy') {
-    when {
-        expression { params.UMGEBUNG == 'prod' }
-    }
-    steps {
-        echo 'Deploye...'
-    }
-}uccess {
+        success {
             archiveArtifacts artifacts: 'version.txt'
         }
         failure {
