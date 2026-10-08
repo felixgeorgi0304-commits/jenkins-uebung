@@ -11,6 +11,11 @@ pipeline {
                 echo 'Teste...'
             }
         }
+	stage('Lint') {
+		steps {
+			echo 'Prüfe Codequalität...'
+		}
+	}
         stage('Deploy') {
             steps {
                 echo 'Deploye...'
