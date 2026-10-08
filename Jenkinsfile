@@ -1,5 +1,8 @@
 pipeline {
     agent any
+	parameters {
+		choice choices: ['dev', 'test', 'prod'], name: 'UMGEBUNG'
+	}
     stages {
         stage('Build') {
             steps {
@@ -16,14 +19,24 @@ pipeline {
 			echo 'Prüfe Codequalität...'
 		}
 	}
-        stage('Deploy') {
-            steps {
-                echo 'Deploye...'
-            }
-        }
+       stage('Deploy') {
+    when {
+        expression { params.UMGEBUNG == 'prod' }
+    }
+    steps {
+        echo 'Deploye...'
+    }
+}
     }
     post {
-        success {
+        sstage('Deploy') {
+    when {
+        expression { params.UMGEBUNG == 'prod' }
+    }
+    steps {
+        echo 'Deploye...'
+    }
+}uccess {
             archiveArtifacts artifacts: 'version.txt'
         }
         failure {
