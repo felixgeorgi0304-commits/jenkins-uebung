@@ -1,40 +1,30 @@
 pipeline {
-    agent any
-    parameters {
-        choice choices: ['dev', 'test', 'prod'], name: 'UMGEBUNG'
+    agent { label 'uebung' }
+    options {
+        timestamps()
+    }
+    triggers {
+        pollSCM('H/2 * * * *')
     }
     stages {
-        stage('Build') {
+        stage('Setup') {
             steps {
-                echo "Umgebung: ${params.UMGEBUNG}"
-                sh 'echo "Version 1.0" > version.txt'
-            }
-        }
-        stage('Lint') {
-            steps {
-                echo 'Prüfe Codequalität...'
+                sh 'python3 -m venv venv'
+                sh 'venv/bin/pip install pytest'
             }
         }
         stage('Test') {
             steps {
-                echo 'Teste...'
-            }
-        }
-        stage('Deploy') {
-            when {
-                expression { params.UMGEBUNG == 'prod' }
-            }
-            steps {
-                echo 'Deploye...'
+                sh 'venv/bin/pytest --junitxml=reports/ergebnisse.xml'
             }
         }
     }
     post {
-        success {
-            archiveArtifacts artifacts: 'version.txt'
+        always {
+            junit testResults: 'reports/ergebnisse.xml', allowEmptyResults: true
         }
-        failure {
-            echo 'Build fehlgeschlagen!'
+        success {
+            archiveArtifacts artifacts: 'rechner.py'
         }
     }
 }
